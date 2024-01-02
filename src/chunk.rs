@@ -3,7 +3,7 @@ use crate::common::Value;
 
 pub struct Chunk {
     pub bytes: Vec<u8>,
-    pub lines: Vec<usize>,
+    pub lines: Vec<u32>,
     pub values: Vec<Value>,
 }
 
@@ -12,7 +12,7 @@ impl Chunk {
         Self { bytes: vec![], lines: vec![], values: vec![] }
     }
 
-    pub fn write_byte(&mut self, byte: u8, line: usize) {
+    pub fn write_byte(&mut self, byte: u8, line: u32) {
         self.bytes.push(byte);
         self.lines.push(line);
     }

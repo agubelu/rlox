@@ -1,17 +1,35 @@
 mod chunk;
 mod common;
 mod debug;
+mod vm;
 
 use chunk::Chunk;
 use common::OpCodes;
+use vm::VM;
 
 fn main() {
     let mut chonky = Chunk::new();
 
-    let cix = chonky.add_constant(420.0);
-    chonky.write_byte(OpCodes::OP_CONSTANT, 123);
-    chonky.write_byte(cix as u8, 123);
-    chonky.write_byte(OpCodes::OP_RETURN, 123);
+    let ix1 = chonky.add_constant(1.0);
+    let ix2 = chonky.add_constant(2.0);
+    let ix3 = chonky.add_constant(3.0);
 
-    println!("{chonky:?}");
+    chonky.write_byte(OpCodes::OP_CONSTANT, 0);
+    chonky.write_byte(ix1 as u8, 0);
+
+    chonky.write_byte(OpCodes::OP_NEGATE, 0);
+
+    chonky.write_byte(OpCodes::OP_CONSTANT, 0);
+    chonky.write_byte(ix2 as u8, 0);
+
+    chonky.write_byte(OpCodes::OP_MULTIPLY, 0);
+
+    chonky.write_byte(OpCodes::OP_CONSTANT, 0);
+    chonky.write_byte(ix3 as u8, 0);
+
+    chonky.write_byte(OpCodes::OP_ADD, 0);
+    chonky.write_byte(OpCodes::OP_RETURN, 0);
+
+    let mut vm = VM::new();
+    println!("{:?}", vm.interpret(&chonky));
 }

@@ -1,7 +1,6 @@
 use std::fmt::{Debug, Formatter, Result};
 use std::io::Write;
-use crate::common::OpCodes;
-use crate::chunk::Chunk;
+use crate::{OpCodes, Chunk};
 
 type Fmtr<'a, 'b> = &'a mut Formatter<'b>;
 

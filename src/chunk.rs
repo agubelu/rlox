@@ -1,5 +1,5 @@
 use std::ops::Index;
-use crate::common::Value;
+use crate::Value;
 
 pub struct Chunk {
     pub bytes: Vec<u8>,

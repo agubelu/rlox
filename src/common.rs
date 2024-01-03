@@ -11,3 +11,9 @@ impl OpCodes {
     pub const OP_MULTIPLY: OpCode = 5;
     pub const OP_DIVIDE: OpCode = 6;
 }
+
+pub enum LoxValue {
+    Bool(bool),
+    Number(f64),
+    Null,
+}

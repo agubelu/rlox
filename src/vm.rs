@@ -1,5 +1,4 @@
-use crate::chunk::Chunk;
-use crate::common::{Value, OpCodes};
+use crate::{Chunk, Compiler, OpCodes, Value};
 
 const STACK_SIZE: usize = 256;
 
@@ -36,9 +35,12 @@ impl VM {
         }
     }
 
-    pub fn interpret(&mut self, chunk: &Chunk) -> InterpretResult {
+    pub fn interpret(&mut self, source: &str) -> InterpretResult {
+        let mut compiler = Compiler::new();
         self.ip = 0;
-        self.run(chunk)
+
+        compiler.compile(source);
+        InterpretResult::Ok
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,5 +121,15 @@ impl VM {
 
         let mut f = stdout().lock();
         debug_instruction(&mut f, chunk, self.ip);
+    }
+}
+
+impl InterpretResult {
+    pub fn exit_code(&self) -> i32 {
+        match self {
+            InterpretResult::Ok => 0,
+            InterpretResult::CompileError => 65,
+            InterpretResult::RuntimeError => 70,
+        }
     }
 }

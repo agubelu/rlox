@@ -1,35 +1,35 @@
 mod chunk;
 mod common;
+mod compiler;
 mod debug;
+mod scanner;
 mod vm;
 
-use chunk::Chunk;
-use common::OpCodes;
-use vm::VM;
+use std::env;
+use std::fs::read_to_string;
+use std::process::exit;
+
+pub use chunk::Chunk;
+pub use common::{OpCodes, Value};
+pub use compiler::Compiler;
+pub use scanner::{Scanner, Token, TokenType};
+pub use vm::{InterpretResult, VM};
 
 fn main() {
-    let mut chonky = Chunk::new();
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        println!("Usage: rlox <file.lox>");
+        exit(1);
+    } else {
+        run_from_file(&args[1]);
+    }
+}
 
-    let ix1 = chonky.add_constant(1.0);
-    let ix2 = chonky.add_constant(2.0);
-    let ix3 = chonky.add_constant(3.0);
-
-    chonky.write_byte(OpCodes::OP_CONSTANT, 0);
-    chonky.write_byte(ix1 as u8, 0);
-
-    chonky.write_byte(OpCodes::OP_NEGATE, 0);
-
-    chonky.write_byte(OpCodes::OP_CONSTANT, 0);
-    chonky.write_byte(ix2 as u8, 0);
-
-    chonky.write_byte(OpCodes::OP_MULTIPLY, 0);
-
-    chonky.write_byte(OpCodes::OP_CONSTANT, 0);
-    chonky.write_byte(ix3 as u8, 0);
-
-    chonky.write_byte(OpCodes::OP_ADD, 0);
-    chonky.write_byte(OpCodes::OP_RETURN, 0);
-
+fn run_from_file(filename: &str) -> ! {
+    let file_contents = read_to_string(filename)
+                            .expect("Could not find/read the provided file.");
     let mut vm = VM::new();
-    println!("{:?}", vm.interpret(&chonky));
+    let result = vm.interpret(&file_contents);
+
+    exit(result.exit_code());
 }

@@ -1,6 +1,7 @@
 use std::ops::Index;
 use crate::Value;
 
+#[derive(Default)]
 pub struct Chunk {
     pub bytes: Vec<u8>,
     pub lines: Vec<u32>,

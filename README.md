@@ -15,3 +15,4 @@ My implementation has a few QoL improvements over the vanilla language:
 Some possible optimizations to implement once everything is up and running so I can measure them:
 - Use tries for matching keywords (https://docs.rs/trie-match/latest/trie_match/)
 - Sprinkle some pointer + unsafe magic around
+- Use data structures that go more brrr (FxHash{Set, Map}, ArrayVec...)

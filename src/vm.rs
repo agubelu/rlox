@@ -1,4 +1,5 @@
-use crate::{Chunk, Compiler, OpCodes, Value};
+use crate::parsing::Parser;
+use crate::{Chunk, OpCodes, Value};
 
 const STACK_SIZE: usize = 256;
 
@@ -36,11 +37,15 @@ impl VM {
     }
 
     pub fn interpret(&mut self, source: &str) -> InterpretResult {
-        let mut compiler = Compiler::new();
+        let mut parser = Parser::new(source);
+        let mut chunk = Chunk::new();
         self.ip = 0;
 
-        compiler.compile(source);
-        InterpretResult::Ok
+        if !parser.compile(&mut chunk) {
+            return InterpretResult::CompileError;
+        }
+
+        self.run(&chunk)
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////

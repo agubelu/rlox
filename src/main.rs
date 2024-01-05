@@ -1,8 +1,8 @@
 mod chunk;
 mod common;
-mod compiler;
 mod debug;
-mod scanner;
+mod parsing;
+mod scanning;
 mod vm;
 
 use std::env;
@@ -11,8 +11,6 @@ use std::process::exit;
 
 pub use chunk::Chunk;
 pub use common::{OpCodes, Value};
-pub use compiler::Compiler;
-pub use scanner::{Scanner, Token, TokenType};
 pub use vm::{InterpretResult, VM};
 
 fn main() {

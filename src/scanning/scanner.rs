@@ -1,4 +1,4 @@
-use TokenType::*;
+use super::{Token, TokenType::{self, *}};
 
 pub struct Scanner<'a> {
     source: &'a str,
@@ -7,41 +7,12 @@ pub struct Scanner<'a> {
     line: u32,
 }
 
-#[derive(Copy, Clone, Debug)]
-pub enum TokenType {
-    // Single-characters
-    LeftParen, RightParen, LeftBrace, RightBrace,
-    Comma, Dot, Minus, Plus, Semicolon, Slash, Asterisk,
-
-    // Boolean operators
-    Not, NotEqual, Equal, EqualEqual,
-    Greater, GreaterEqual, Less, LessEqual,
-
-    // Literals
-    Identifier, String, Number,
-
-    // Keywords
-    And, Class, If, Else, True, False,
-    For, Fn, Null, Or, Print, Return,
-    Super, This, Let, While,
-
-    // Aux
-    Eof, Error,
-}
-
-#[derive(Debug)]
-pub struct Token<'a> {
-    pub kind: TokenType,
-    pub line: u32,
-    pub literal: &'a str,
-}
-
-impl<'a> Scanner<'a> {
-    pub fn new(source: &'a str) -> Self {
+impl<'src> Scanner<'src> {
+    pub fn new(source: &'src str) -> Self {
         Self { source, start: 0, current: 0, line: 1 }
     }
 
-    pub fn scan_next_token(&mut self) -> Token {
+    pub fn scan_next_token(&mut self) -> Token<'src> {
         self.skip_whitespace();
         self.start = self.current;
 
@@ -96,17 +67,17 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    fn make_token(&self, kind: TokenType) -> Token {
+    fn make_token(&self, kind: TokenType) -> Token<'src> {
         let literal = &self.source[self.start .. self.current];
         Token { literal, kind, line: self.line }
     }
 
-    fn make_token_if(&mut self, expected: &str, yes: TokenType, no: TokenType) -> Token {
+    fn make_token_if(&mut self, expected: &str, yes: TokenType, no: TokenType) -> Token<'src> {
         let kind = if self.matches(expected) { yes } else { no };
         self.make_token(kind)
     }
 
-    fn make_string(&mut self) -> Token {
+    fn make_string(&mut self) -> Token<'src> {
         let closing = char(self.peek_back());
         let mut peek;
 
@@ -127,7 +98,7 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    fn make_number(&mut self) -> Token {
+    fn make_number(&mut self) -> Token<'src> {
         while is_digit(self.peek()) {
             self.consume();
         }
@@ -144,7 +115,7 @@ impl<'a> Scanner<'a> {
         self.make_token(Number)
     }
 
-    fn make_identifier(&mut self) -> Token {
+    fn make_identifier(&mut self) -> Token<'src> {
         let mut peek;
         while {peek = self.peek(); is_digit(peek) || is_alpha(peek)} {
             self.consume();
@@ -154,7 +125,7 @@ impl<'a> Scanner<'a> {
         self.make_token(TokenType::from_literal(literal))
     }
 
-    fn make_error_token(&self, literal: &'a str) -> Token {
+    fn make_error_token(&self, literal: &'src str) -> Token<'src> {
         Token { literal, kind: Error, line: self.line }
     }
 
@@ -183,30 +154,6 @@ impl<'a> Scanner<'a> {
 
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
-    }
-}
-
-impl TokenType {
-    fn from_literal(literal: &str) -> Self {
-        match literal {
-            "and" => And,
-            "class" => Class,
-            "else" => Else,
-            "false" => False,
-            "for" => For,
-            "fn" => Fn,
-            "if" => If,
-            "let" => Let,
-            "null" => Null,
-            "or" => Or,
-            "print" => Print,
-            "return" => Return,
-            "super" => Super,
-            "this" => This,
-            "true" => True,
-            "while" => While,
-            _ => Identifier,
-        }
     }
 }
 

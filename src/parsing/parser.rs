@@ -1,5 +1,6 @@
 use crate::{Chunk, Value, OpCodes};
 use crate::scanning::{Scanner, Token, TokenType};
+use super::utils::{Precedence, RulesTable, ParseFn, ParseRule};
 use TokenType::*;
 
 pub struct Parser<'src, 'chk> {
@@ -32,8 +33,25 @@ impl<'src, 'chk> Parser<'src, 'chk> {
     //////////////////////////////////////////////////////////////////////////////////////////
     /// Expression parsing methods
 
-    fn expression(&mut self) {
-        
+    fn parse_precedence(&mut self, prec: Precedence) {
+        self.consume();
+
+        let (prefix_fn, infix_fn, _): &ParseRule<'src, 'chk> = &RulesTable[self.previous.kind as usize];
+        // if prefix_fn.is_none() {
+        //     self.error_at_previous("Expected expression.");
+        //     return;
+        // }
+
+        prefix_fn(self);
+    }
+
+    // fn get_rule(kind: TokenType) -> ParseRule {
+    //     // RulesTable[kind as usize]
+    //     (None, Some(Parser::number), Precedence::NoPr)
+    // }
+
+    pub(super) fn expression(&mut self) {
+        self.parse_precedence(Precedence::Assign);
     }
 
     pub(super) fn number(&mut self) {
@@ -43,21 +61,39 @@ impl<'src, 'chk> Parser<'src, 'chk> {
         self.emit_constant(value);
     }
 
-    fn grouping(&mut self) {
+    pub(super) fn grouping(&mut self) {
         self.expression();
         self.consume_if(RightParen, "Expected closing ')' after expression.");
     }
 
-    fn unary(&mut self) {
+    pub(super) fn unary(&mut self) {
         let op = self.previous.kind;
 
         // Compile the expression ahead first
-        self.expression();
+        self.parse_precedence(Precedence::Unary);
 
         // Emit the right instruction according to the operand
         match op {
             Minus => self.emit_byte(OpCodes::OP_NEGATE),
             _ => unreachable!(),
+        }
+    }
+
+    pub(super) fn binary(&mut self) {
+        // The left-side expression has already been compiled
+        let op = self.previous.kind;
+        let &(_, _, precedence) = &RulesTable[op as usize];
+
+        // Compile the right-side expression with a higher precedence
+        self.parse_precedence(precedence.higher());
+
+        // Emit the right instruction according to the operand
+        match op {
+            Plus => self.emit_byte(OpCodes::OP_ADD),
+            Minus => self.emit_byte(OpCodes::OP_SUBSTRACT),
+            Asterisk => self.emit_byte(OpCodes::OP_MULTIPLY),
+            Slash => self.emit_byte(OpCodes::OP_DIVIDE),
+            _ => unreachable!()
         }
     }
 

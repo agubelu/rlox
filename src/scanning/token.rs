@@ -2,6 +2,9 @@ use TokenType::*;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub enum TokenType {
+    // Note: the order of the token definitions here affects
+    // the order of the parsing table in parsing::utils
+
     // Single-characters
     LeftParen, RightParen, LeftBrace, RightBrace,
     Comma, Dot, Minus, Plus, Semicolon, Slash, Asterisk,

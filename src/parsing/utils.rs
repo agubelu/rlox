@@ -2,8 +2,9 @@
 use super::Parser;
 use Precedence::*;
 
-pub type ParseFn<'a, 'b> = Option<fn(&mut Parser<'a, 'b>) -> ()>;
-pub type ParseRule<'a, 'b> = (ParseFn<'a, 'b>, ParseFn<'a, 'b>, Precedence);
+pub type ParseFn<'src, 'chk> = for<'a> fn(&'a mut Parser<'src, 'chk>);
+// pub type ParseFnOpt = Option<ParseFn>;
+pub type ParseRule<'src, 'chk> = (ParseFn<'src, 'chk>, ParseFn<'src, 'chk>, Precedence);
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Precedence {
@@ -24,6 +25,27 @@ pub enum Precedence {
     Primary,    // Literals
 }
 
+impl Precedence {
+    pub fn higher(&self) -> Self {
+        // TODO: possible optimization
+        match self {
+            NoPr => Assign,
+            Assign => Or,
+            Or => And,
+            And => Equality,
+            Equality => Compare,
+            Compare => Term,
+            Term => Factor,
+            Factor => Unary,
+            Unary => Call,
+            Call => Primary,
+            Primary => Primary,
+        }
+    }
+}
+
 pub static RulesTable: [ParseRule; 1] = [
-    (None, Some(Parser::number), NoPr)
+    // Note: the order of this table is highly dependent on the
+    // order of the token types in scanning::token::TokenType
+    (Parser::number, Parser::number, NoPr)
 ];

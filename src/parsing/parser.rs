@@ -1,6 +1,6 @@
 use crate::{Chunk, LoxValue, OpCodes};
 use crate::scanning::{Scanner, Token, TokenType};
-use super::utils::Precedence;
+use super::utils::{Precedence, Precs};
 use TokenType::*;
 
 pub struct Parser<'src, 'chk> {
@@ -63,7 +63,7 @@ impl<'src, 'chk> Parser<'src, 'chk> {
     }
 
     pub(super) fn expression(&mut self) {
-        self.parse_precedence(Precedence::Assign);
+        self.parse_precedence(Precs::ASSIGN);
     }
 
     pub(super) fn literal(&mut self) {
@@ -91,7 +91,7 @@ impl<'src, 'chk> Parser<'src, 'chk> {
         let op = self.previous.kind;
 
         // Compile the expression ahead first
-        self.parse_precedence(Precedence::Unary);
+        self.parse_precedence(Precs::UNARY);
 
         // Emit the right instruction according to the operand
         match op {
@@ -108,7 +108,7 @@ impl<'src, 'chk> Parser<'src, 'chk> {
 
         // Compile the right-side expression with a higher precedence
         // to ensure left associativity
-        self.parse_precedence(precedence.higher());
+        self.parse_precedence(precedence + 1);
 
         // Emit the right instruction according to the operand
         match op {

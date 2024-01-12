@@ -1,9 +1,10 @@
 /** Big declaration chunks that I didn't wanna have around actual code logic. */
+
+use crate::scanning::TokenType::{self, *};
 use super::Parser;
 use Precedence::*;
 
-pub type ParseFn<'src, 'chk> = for<'a> fn(&'a mut Parser<'src, 'chk>);
-// pub type ParseFnOpt = Option<ParseFn>;
+pub type ParseFn<'src, 'chk> = Option<fn(&mut Parser<'src, 'chk>)>;
 pub type ParseRule<'src, 'chk> = (ParseFn<'src, 'chk>, ParseFn<'src, 'chk>, Precedence);
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -14,9 +15,9 @@ pub enum Precedence {
     // from lowest to highest.
     NoPr,       // Renamed from None to avoid clashing with Option::None
     Assign,     // =
-    Or,         // ||
-    And,        // &&
-    Equality,   // == !==
+    BoolOr,     // ||
+    BoolAnd,    // &&
+    Equality,   // == !=
     Compare,    // < <= > >=
     Term,       // + -
     Factor,     // * /
@@ -30,9 +31,9 @@ impl Precedence {
         // TODO: possible optimization
         match self {
             NoPr => Assign,
-            Assign => Or,
-            Or => And,
-            And => Equality,
+            Assign => BoolOr,
+            BoolOr => BoolAnd,
+            BoolAnd => Equality,
             Equality => Compare,
             Compare => Term,
             Term => Factor,
@@ -44,8 +45,20 @@ impl Precedence {
     }
 }
 
-pub static RulesTable: [ParseRule; 1] = [
-    // Note: the order of this table is highly dependent on the
-    // order of the token types in scanning::token::TokenType
-    (Parser::number, Parser::number, NoPr)
-];
+impl<'src, 'chk> Parser<'src, 'chk> {
+    pub(super) fn get_rule(kind: TokenType) -> ParseRule<'src, 'chk> {
+        match kind {
+            LeftParen => (Some(Self::grouping), None, NoPr),
+            Minus => (Some(Self::unary), Some(Self::binary), Term),
+            Plus => (None, Some(Self::binary), Term),
+            Slash => (None, Some(Self::binary), Factor),
+            Asterisk => (None, Some(Self::binary), Factor),
+            Number => (Some(Self::number), None, NoPr),
+            Null => (Some(Self::literal), None, NoPr),
+            True => (Some(Self::literal), None, NoPr),
+            False => (Some(Self::literal), None, NoPr),
+            Not => (Some(Self::unary), None, NoPr),
+            _ => (None, None, NoPr)
+        }
+    }
+}

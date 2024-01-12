@@ -1,5 +1,4 @@
 pub type OpCode = u8;
-pub type Value = f64;
 
 pub struct OpCodes;
 impl OpCodes {
@@ -10,10 +9,8 @@ impl OpCodes {
     pub const OP_SUBSTRACT: OpCode = 4;
     pub const OP_MULTIPLY: OpCode = 5;
     pub const OP_DIVIDE: OpCode = 6;
-}
-
-pub enum LoxValue {
-    Bool(bool),
-    Number(f64),
-    Null,
+    pub const OP_NULL: OpCode = 7;
+    pub const OP_TRUE: OpCode = 8;
+    pub const OP_FALSE: OpCode = 9;
+    pub const OP_NOT: OpCode = 10;
 }

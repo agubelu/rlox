@@ -135,11 +135,19 @@ impl<'src> Scanner<'src> {
     }
 
     fn peek(&self) -> &str {
-        &self.source[self.current .. self.current + 1]
+        if self.is_at_end() { // TODO: fix this hack
+            "\0"
+        } else {
+            &self.source[self.current .. self.current + 1]
+        }
     }
 
     fn peek_forward(&self) -> &str {
-        &self.source[self.current + 1 .. self.current + 2]
+        if self.is_at_end() {
+            "\0"
+        } else {
+            &self.source[self.current + 1 .. self.current + 2]
+        }
     }
 
     fn peek_back(&self) -> &str {

@@ -1,11 +1,11 @@
 use crate::parsing::Parser;
-use crate::{Chunk, OpCodes, Value};
+use crate::{Chunk, OpCodes, LoxValue};
 
 const STACK_SIZE: usize = 256;
 
 pub struct VM {
     ip: usize,
-    stack: [Value; 256],
+    stack: [LoxValue; 256],
     stack_top: usize,
 }
 
@@ -21,8 +21,20 @@ macro_rules! binary_op {
     // It is generic over the arithmetic operator to use.
     ($self:ident, $op:tt) => {
         {
-            let val = $self.pop() $op $self.pop();
-            $self.push(val);
+            if let Some(lox_val) = $self.pop() $op $self.pop() {
+                $self.push(lox_val);
+            } else {
+                runtime_error!($self, "Values must be numbers.");
+            }
+        }
+    };
+}
+
+macro_rules! runtime_error {
+    ($self:ident, $msg:tt) => {
+        {
+            $self.runtime_error($msg);
+            return InterpretResult::RuntimeError;
         }
     };
 }
@@ -31,7 +43,7 @@ impl VM {
     pub fn new() -> Self {
         Self {
             ip: 0,
-            stack: [Value::default(); STACK_SIZE],
+            stack: [LoxValue::Null; STACK_SIZE],
             stack_top: 0
         }
     }
@@ -68,13 +80,26 @@ impl VM {
                     self.push(val);
                 },
                 OpCodes::OP_NEGATE => {
-                    let val = -self.pop();
-                    self.push(val);
+                    if let Some(lox_val) = -self.pop() {
+                        self.push(lox_val);
+                    } else {
+                        runtime_error!(self, "Value must be a number.");
+                    }
                 },
                 OpCodes::OP_ADD => binary_op!(self, +),
                 OpCodes::OP_SUBSTRACT => binary_op!(self, -),
                 OpCodes::OP_MULTIPLY => binary_op!(self, *),
                 OpCodes::OP_DIVIDE => binary_op!(self, /),
+                OpCodes::OP_NULL => self.push(LoxValue::Null),
+                OpCodes::OP_TRUE => self.push(LoxValue::Bool(true)),
+                OpCodes::OP_FALSE => self.push(LoxValue::Bool(false)),
+                OpCodes::OP_NOT => {
+                    if let Some(lox_val) = !self.pop() {
+                        self.push(lox_val);
+                    } else {
+                        runtime_error!(self, "Value must be a boolean.");
+                    }
+                }
                 _ => {},
             }
         }
@@ -86,19 +111,28 @@ impl VM {
         byte
     }
 
-    fn read_constant(&mut self, chunk: &Chunk) -> Value {
+    fn read_constant(&mut self, chunk: &Chunk) -> LoxValue {
         let ix = self.read_byte(chunk);
         chunk.values[ix as usize]
     }
 
-    fn push(&mut self, val: Value) {
+    fn push(&mut self, val: LoxValue) {
         self.stack[self.stack_top] = val;
         self.stack_top += 1;
     }
 
-    fn pop(&mut self) -> Value {
+    fn pop(&mut self) -> LoxValue {
         self.stack_top -= 1;
         self.stack[self.stack_top]
+    }
+
+    fn peek(&self, dist: usize) -> LoxValue {
+        self.stack[self.stack_top - 1 - dist]
+    }
+
+    fn runtime_error(&self, msg: &str) {
+        eprintln!("{msg}");
+        // TODO
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
-use crate::{Chunk, Value, OpCodes};
+use crate::{Chunk, LoxValue, OpCodes};
 use crate::scanning::{Scanner, Token, TokenType};
-use super::utils::{Precedence, RulesTable, ParseFn, ParseRule};
+use super::utils::Precedence;
 use TokenType::*;
 
 pub struct Parser<'src, 'chk> {
@@ -26,6 +26,8 @@ impl<'src, 'chk> Parser<'src, 'chk> {
 
     pub fn compile(&mut self, chunk: &'chk mut Chunk) -> bool {
         self.chunk = Some(chunk);
+        self.consume();
+        self.expression();
         self.finish();
         !self.had_error
     }
@@ -36,29 +38,48 @@ impl<'src, 'chk> Parser<'src, 'chk> {
     fn parse_precedence(&mut self, prec: Precedence) {
         self.consume();
 
-        let (prefix_fn, infix_fn, _): &ParseRule<'src, 'chk> = &RulesTable[self.previous.kind as usize];
-        // if prefix_fn.is_none() {
-        //     self.error_at_previous("Expected expression.");
-        //     return;
-        // }
+        // At this point, the parser is at the beginning of an expression.
+        // Check the parsing rules to determine which method to use
+        // to start parsing it according to the previous token.
+        let (prefix_fn, _, _) = Self::get_rule(self.previous.kind);
+        if prefix_fn.is_none() {
+            self.error_at_previous("Expected expression.");
+            return;
+        }
 
-        prefix_fn(self);
+        // Parse the infix expression
+        prefix_fn.unwrap()(self);
+
+        // At this point, the next token may be a binary operator. If it is and
+        // it has a higher precedence than the expression we are currently
+        // parsing, include it as well
+        while Self::get_rule(self.current.kind).2 >= prec {
+            // Consume the binary operator token
+            self.consume();
+            // Parse the expression
+            let infix_fn = Self::get_rule(self.previous.kind).1.unwrap();
+            infix_fn(self);
+        }
     }
-
-    // fn get_rule(kind: TokenType) -> ParseRule {
-    //     // RulesTable[kind as usize]
-    //     (None, Some(Parser::number), Precedence::NoPr)
-    // }
 
     pub(super) fn expression(&mut self) {
         self.parse_precedence(Precedence::Assign);
     }
 
+    pub(super) fn literal(&mut self) {
+        match self.previous.kind {
+            Null => self.emit_byte(OpCodes::OP_NULL),
+            True => self.emit_byte(OpCodes::OP_TRUE),
+            False => self.emit_byte(OpCodes::OP_FALSE),
+            _ => unreachable!()
+        }
+    }
+
     pub(super) fn number(&mut self) {
         // We can unwrap safely because the token wouldn't be of type Number
         // if the format wasn't correct.
-        let value: Value = self.previous.literal.parse().unwrap();
-        self.emit_constant(value);
+        let number = self.previous.literal.parse().unwrap();
+        self.emit_constant(LoxValue::Number(number));
     }
 
     pub(super) fn grouping(&mut self) {
@@ -75,6 +96,7 @@ impl<'src, 'chk> Parser<'src, 'chk> {
         // Emit the right instruction according to the operand
         match op {
             Minus => self.emit_byte(OpCodes::OP_NEGATE),
+            Not => self.emit_byte(OpCodes::OP_NOT),
             _ => unreachable!(),
         }
     }
@@ -82,9 +104,10 @@ impl<'src, 'chk> Parser<'src, 'chk> {
     pub(super) fn binary(&mut self) {
         // The left-side expression has already been compiled
         let op = self.previous.kind;
-        let &(_, _, precedence) = &RulesTable[op as usize];
+        let (_, _, precedence) = Self::get_rule(op);
 
         // Compile the right-side expression with a higher precedence
+        // to ensure left associativity
         self.parse_precedence(precedence.higher());
 
         // Emit the right instruction according to the operand
@@ -105,7 +128,7 @@ impl<'src, 'chk> Parser<'src, 'chk> {
         self.previous = self.current;
         self.current = self.scanner.scan_next_token();
 
-        if self.current.kind != Error {
+        if self.current.kind == Error {
             self.error_at_current(self.current.literal);
         }
     }
@@ -132,7 +155,7 @@ impl<'src, 'chk> Parser<'src, 'chk> {
         self.emit_byte(byte2);
     }
 
-    fn emit_constant(&mut self, val: Value) {
+    fn emit_constant(&mut self, val: LoxValue) {
         let ix = self.current_chunk().add_constant(val);
         if ix > u8::MAX as usize {
             panic!("Max constants reached.");

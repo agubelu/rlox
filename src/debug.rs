@@ -37,6 +37,10 @@ pub fn debug_instruction(f: &mut impl Write, chunk: &Chunk, offset: usize) -> us
         OpCodes::OP_SUBSTRACT => simple_op(f, "OP_SUBSTRACT", offset),
         OpCodes::OP_MULTIPLY => simple_op(f, "OP_MULTIPLY", offset),
         OpCodes::OP_DIVIDE => simple_op(f, "OP_DIVIDE", offset),
+        OpCodes::OP_NULL => simple_op(f, "OP_NULL", offset),
+        OpCodes::OP_TRUE => simple_op(f, "OP_TRUE", offset),
+        OpCodes::OP_FALSE => simple_op(f, "OP_FALSE", offset),
+        OpCodes::OP_NOT => simple_op(f, "OP_NOT", offset),
         _ => panic!("Unknown opcode: {opcode}"),
     }
 }

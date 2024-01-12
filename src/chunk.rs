@@ -1,11 +1,11 @@
 use std::ops::Index;
-use crate::Value;
+use crate::LoxValue;
 
 #[derive(Default)]
 pub struct Chunk {
     pub bytes: Vec<u8>,
     pub lines: Vec<u32>,
-    pub values: Vec<Value>,
+    pub values: Vec<LoxValue>,
 }
 
 impl Chunk {
@@ -18,7 +18,7 @@ impl Chunk {
         self.lines.push(line);
     }
 
-    pub fn add_constant(&mut self, value: Value) -> usize {
+    pub fn add_constant(&mut self, value: LoxValue) -> usize {
         self.values.push(value);
         self.values.len() - 1
     }

@@ -1,8 +1,9 @@
 mod chunk;
-mod common;
 mod debug;
+mod opcodes;
 mod parsing;
 mod scanning;
+mod value;
 mod vm;
 
 use std::env;
@@ -10,7 +11,8 @@ use std::fs::read_to_string;
 use std::process::exit;
 
 pub use chunk::Chunk;
-pub use common::{OpCodes, Value};
+pub use opcodes::{OpCode, OpCodes};
+pub use value::LoxValue;
 pub use vm::{InterpretResult, VM};
 
 fn main() {

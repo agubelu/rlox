@@ -25,16 +25,56 @@ impl Precs {
 impl<'src, 'chk> Parser<'src, 'chk> {
     pub(super) fn get_rule(kind: TokenType) -> ParseRule<'src, 'chk> {
         match kind {
-            LeftParen => (Some(Self::grouping), None, Precs::NONE),
-            Minus => (Some(Self::unary), Some(Self::binary), Precs::TERM),
-            Plus => (None, Some(Self::binary), Precs::TERM),
-            Slash => (None, Some(Self::binary), Precs::FACTOR),
-            Asterisk => (None, Some(Self::binary), Precs::FACTOR),
-            Number => (Some(Self::number), None, Precs::NONE),
-            Null => (Some(Self::literal), None, Precs::NONE),
-            True => (Some(Self::literal), None, Precs::NONE),
-            False => (Some(Self::literal), None, Precs::NONE),
-            Not => (Some(Self::unary), None, Precs::NONE),
+            LeftParen => (
+                Some(Self::grouping),
+                None,
+                Precs::NONE
+            ),
+            Minus => (
+                Some(Self::unary),
+                Some(Self::binary),
+                Precs::TERM
+            ),
+            Plus => (
+                None,
+                Some(Self::binary),
+                Precs::TERM
+            ),
+            Slash => (
+                None,
+                Some(Self::binary),
+                Precs::FACTOR
+            ),
+            Asterisk => (
+                None,
+                Some(Self::binary),
+                Precs::FACTOR
+            ),
+            Number => (
+                Some(Self::number),
+                None,
+                Precs::NONE
+            ),
+            Null => (
+                Some(Self::literal),
+                None,
+                Precs::NONE
+            ),
+            True => (
+                Some(Self::literal),
+                None,
+                Precs::NONE
+            ),
+            False => (
+                Some(Self::literal),
+                None,
+                Precs::NONE
+            ),
+            Not => (
+                Some(Self::unary),
+                None,
+                Precs::NONE
+            ),
             _ => (None, None, Precs::NONE)
         }
     }

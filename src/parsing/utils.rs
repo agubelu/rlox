@@ -1,4 +1,4 @@
-/** Big declaration chunks that I didn't wanna have around actual code logic. */
+/** Big declaration chunks that I didn't wanna have around actual parsing logic. */
 
 use crate::scanning::TokenType::{self, *};
 use super::Parser;

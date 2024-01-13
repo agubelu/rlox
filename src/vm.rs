@@ -19,21 +19,24 @@ pub enum InterpretResult {
 macro_rules! binary_op {
     // Macro for arithmetic operations in the VM that take two values.
     // It is generic over the arithmetic operator to use.
-    ($self:ident, $op:tt) => {
+    ($self:ident, $chunk:ident, $op:tt) => {
         {
             if let Some(lox_val) = $self.pop() $op $self.pop() {
                 $self.push(lox_val);
             } else {
-                runtime_error!($self, "Values must be numbers.");
+                runtime_error!($self, $chunk, "Values must be numbers.");
             }
         }
     };
 }
 
 macro_rules! runtime_error {
-    ($self:ident, $msg:tt) => {
+    ($self:ident, $chunk:ident, $($args:expr),+) => {
         {
-            $self.runtime_error($msg);
+            eprintln!($($args),+);
+            let line_err = $chunk.lines[$self.ip - 1];
+            eprintln!("[line {line_err}] in script.");
+            $self.reset_stack();
             return InterpretResult::RuntimeError;
         }
     };
@@ -84,13 +87,13 @@ impl VM {
                     if let Some(lox_val) = -self.pop() {
                         self.push(lox_val);
                     } else {
-                        runtime_error!(self, "Value must be a number.");
+                        runtime_error!(self, chunk, "Value must be a number.");
                     }
                 },
-                OpCodes::OP_ADD => binary_op!(self, +),
-                OpCodes::OP_SUBSTRACT => binary_op!(self, -),
-                OpCodes::OP_MULTIPLY => binary_op!(self, *),
-                OpCodes::OP_DIVIDE => binary_op!(self, /),
+                OpCodes::OP_ADD => binary_op!(self, chunk, +),
+                OpCodes::OP_SUBSTRACT => binary_op!(self, chunk, -),
+                OpCodes::OP_MULTIPLY => binary_op!(self, chunk, *),
+                OpCodes::OP_DIVIDE => binary_op!(self, chunk, /),
                 OpCodes::OP_NULL => self.push(LoxValue::Null),
                 OpCodes::OP_TRUE => self.push(LoxValue::Bool(true)),
                 OpCodes::OP_FALSE => self.push(LoxValue::Bool(false)),
@@ -106,14 +109,14 @@ impl VM {
                     if let Some(lox_val) = self.pop().greater(&self.pop()) {
                         self.push(lox_val);
                     } else {
-                        runtime_error!(self, "Values must be numbers.");
+                        runtime_error!(self, chunk, "Values must be numbers.");
                     }
                 },
                 OpCodes::OP_LESS => {
                     if let Some(lox_val) = self.pop().less(&self.pop()) {
                         self.push(lox_val);
                     } else {
-                        runtime_error!(self, "Values must be numbers.");
+                        runtime_error!(self, chunk, "Values must be numbers.");
                     }
                 },
                 _ => {},
@@ -142,9 +145,8 @@ impl VM {
         self.stack[self.stack_top]
     }
 
-    fn runtime_error(&self, msg: &str) {
-        eprintln!("{msg}");
-        // TODO
+    fn reset_stack(&mut self) {
+        self.stack_top = 0;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////

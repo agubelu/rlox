@@ -110,12 +110,18 @@ impl<'src, 'chk> Parser<'src, 'chk> {
         // to ensure left associativity
         self.parse_precedence(precedence + 1);
 
-        // Emit the right instruction according to the operand
+        // Emit the right instructions according to the operand
         match op {
             Plus => self.emit_byte(OpCodes::OP_ADD),
             Minus => self.emit_byte(OpCodes::OP_SUBSTRACT),
             Asterisk => self.emit_byte(OpCodes::OP_MULTIPLY),
             Slash => self.emit_byte(OpCodes::OP_DIVIDE),
+            EqualEqual => self.emit_byte(OpCodes::OP_EQUAL),
+            NotEqual => self.emit_bytes(OpCodes::OP_EQUAL, OpCodes::OP_NOT),
+            Less => self.emit_byte(OpCodes::OP_LESS),
+            LessEqual => self.emit_bytes(OpCodes::OP_GREATER, OpCodes::OP_NOT),
+            Greater => self.emit_byte(OpCodes::OP_GREATER),
+            GreaterEqual => self.emit_bytes(OpCodes::OP_LESS, OpCodes::OP_NOT),
             _ => unreachable!()
         }
     }

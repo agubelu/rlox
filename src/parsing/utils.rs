@@ -75,6 +75,36 @@ impl<'src, 'chk> Parser<'src, 'chk> {
                 None,
                 Precs::NONE
             ),
+            EqualEqual => (
+                None,
+                Some(Self::binary),
+                Precs::EQUALITY,
+            ),
+            NotEqual => (
+                None,
+                Some(Self::binary),
+                Precs::EQUALITY,
+            ),
+            Less => (
+                None,
+                Some(Self::binary),
+                Precs::COMPARE,
+            ),
+            LessEqual => (
+                None,
+                Some(Self::binary),
+                Precs::COMPARE,
+            ),
+            Greater => (
+                None,
+                Some(Self::binary),
+                Precs::COMPARE,
+            ),
+            GreaterEqual => (
+                None,
+                Some(Self::binary),
+                Precs::COMPARE,
+            ),
             _ => (None, None, Precs::NONE)
         }
     }

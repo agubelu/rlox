@@ -41,6 +41,9 @@ pub fn debug_instruction(f: &mut impl Write, chunk: &Chunk, offset: usize) -> us
         OpCodes::OP_TRUE => simple_op(f, "OP_TRUE", offset),
         OpCodes::OP_FALSE => simple_op(f, "OP_FALSE", offset),
         OpCodes::OP_NOT => simple_op(f, "OP_NOT", offset),
+        OpCodes::OP_EQUAL => simple_op(f, "OP_EQUAL", offset),
+        OpCodes::OP_LESS => simple_op(f, "OP_LESS", offset),
+        OpCodes::OP_GREATER => simple_op(f, "OP_GREATER", offset),
         _ => panic!("Unknown opcode: {opcode}"),
     }
 }

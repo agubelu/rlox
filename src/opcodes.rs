@@ -13,4 +13,7 @@ impl OpCodes {
     pub const OP_TRUE: OpCode = 8;
     pub const OP_FALSE: OpCode = 9;
     pub const OP_NOT: OpCode = 10;
+    pub const OP_EQUAL: OpCode = 11;
+    pub const OP_GREATER: OpCode = 12;
+    pub const OP_LESS: OpCode = 13;
 }

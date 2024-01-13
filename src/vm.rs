@@ -94,12 +94,27 @@ impl VM {
                 OpCodes::OP_TRUE => self.push(LoxValue::Bool(true)),
                 OpCodes::OP_FALSE => self.push(LoxValue::Bool(false)),
                 OpCodes::OP_NOT => {
-                    if let Some(lox_val) = !self.pop() {
+                    let val = self.pop().is_falsey();
+                    self.push(LoxValue::Bool(val));
+                },
+                OpCodes::OP_EQUAL => {
+                    let val = self.pop() == self.pop();
+                    self.push(LoxValue::Bool(val));
+                },
+                OpCodes::OP_GREATER => {
+                    if let Some(lox_val) = self.pop().greater(&self.pop()) {
                         self.push(lox_val);
                     } else {
-                        runtime_error!(self, "Value must be a boolean.");
+                        runtime_error!(self, "Values must be numbers.");
                     }
-                }
+                },
+                OpCodes::OP_LESS => {
+                    if let Some(lox_val) = self.pop().less(&self.pop()) {
+                        self.push(lox_val);
+                    } else {
+                        runtime_error!(self, "Values must be numbers.");
+                    }
+                },
                 _ => {},
             }
         }

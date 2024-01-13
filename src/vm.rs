@@ -40,6 +40,7 @@ macro_rules! runtime_error {
 }
 
 impl VM {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             ip: 0,
@@ -139,10 +140,6 @@ impl VM {
     fn pop(&mut self) -> LoxValue {
         self.stack_top -= 1;
         self.stack[self.stack_top]
-    }
-
-    fn peek(&self, dist: usize) -> LoxValue {
-        self.stack[self.stack_top - 1 - dist]
     }
 
     fn runtime_error(&self, msg: &str) {

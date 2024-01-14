@@ -1,3 +1,4 @@
+use std::mem::take;
 use crate::parsing::Parser;
 use crate::{Chunk, OpCodes, LoxValue};
 
@@ -47,7 +48,7 @@ impl VM {
     pub fn new() -> Self {
         Self {
             ip: 0,
-            stack: std::array::from_fn(|_| LoxValue::Null),
+            stack: std::array::from_fn(|_| LoxValue::default()),
             stack_top: 0
         }
     }
@@ -143,7 +144,11 @@ impl VM {
     fn pop(&mut self) -> LoxValue {
         // TODO: make it Copy again?
         self.stack_top -= 1;
-        self.stack[self.stack_top].clone()
+        // When popping a value, we replace it with Null on the stack
+        // as it won't be used anymore. This ensures that values with
+        // allocated memory on the heap are moved out of the stack and
+        // their data is dropped when the value itself is after being used.
+        take(&mut self.stack[self.stack_top])
     }
 
     fn reset_stack(&mut self) {

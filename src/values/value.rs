@@ -3,7 +3,7 @@ use std::ops::{Add, Sub, Mul, Div, Neg, Not, BitAnd, BitOr};
 use crate::Object;
 use LoxValue::*;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub enum LoxValue {
     /* Important note: the various binary operations implemented
     for LoxValue put the right-hand operand on the left. This is
@@ -16,6 +16,7 @@ pub enum LoxValue {
     Bool(bool),
     Number(f64),
     Object(Object),
+    #[default]
     Null,
 }
 

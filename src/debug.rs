@@ -55,7 +55,7 @@ fn simple_op(f: &mut impl Write, name: &str, offset: usize) -> usize {
 
 fn constant_op(f: &mut impl Write, name: &str, chunk: &Chunk, offset: usize) -> usize {
     let value_ix = chunk[offset + 1];
-    let value = chunk.values[value_ix as usize];
+    let value = &chunk.values[value_ix as usize];
     writeln!(f, "{name:<16} {value_ix:4} '{value}'").unwrap();
     offset + 2
 }
@@ -82,6 +82,6 @@ impl<'a, 'b> Write for IOFormatter<'a, 'b> {
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
-        todo!()
+        Ok(())
     }
 }

@@ -105,6 +105,11 @@ impl<'src, 'chk> Parser<'src, 'chk> {
                 Some(Self::binary),
                 Precs::COMPARE,
             ),
+            String => (
+                Some(Self::string),
+                None,
+                Precs::NONE,
+            ),
             _ => (None, None, Precs::NONE)
         }
     }

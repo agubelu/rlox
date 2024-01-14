@@ -1,4 +1,4 @@
-use crate::{Chunk, LoxValue, OpCodes};
+use crate::{Chunk, LoxValue, OpCodes, Object};
 use crate::scanning::{Scanner, Token, TokenType};
 use super::utils::{Precedence, Precs};
 use TokenType::*;
@@ -80,6 +80,12 @@ impl<'src, 'chk> Parser<'src, 'chk> {
         // if the format wasn't correct.
         let number = self.previous.literal.parse().unwrap();
         self.emit_constant(LoxValue::Number(number));
+    }
+
+    pub(super) fn string(&mut self) {
+        let string = self.previous.literal;
+        let trimmed = &string[1..string.len() - 1];
+        self.emit_constant(LoxValue::Object(Object::String(trimmed.to_owned())));
     }
 
     pub(super) fn grouping(&mut self) {

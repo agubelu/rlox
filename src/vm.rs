@@ -5,7 +5,7 @@ const STACK_SIZE: usize = 256;
 
 pub struct VM {
     ip: usize,
-    stack: [LoxValue; 256],
+    stack: [LoxValue; STACK_SIZE],
     stack_top: usize,
 }
 
@@ -24,7 +24,7 @@ macro_rules! binary_op {
             if let Some(lox_val) = $self.pop() $op $self.pop() {
                 $self.push(lox_val);
             } else {
-                runtime_error!($self, $chunk, "Values must be numbers.");
+                runtime_error!($self, $chunk, "Values have incompatible types.");
             }
         }
     };
@@ -47,7 +47,7 @@ impl VM {
     pub fn new() -> Self {
         Self {
             ip: 0,
-            stack: [LoxValue::Null; STACK_SIZE],
+            stack: std::array::from_fn(|_| LoxValue::Null),
             stack_top: 0
         }
     }
@@ -132,7 +132,7 @@ impl VM {
 
     fn read_constant(&mut self, chunk: &Chunk) -> LoxValue {
         let ix = self.read_byte(chunk);
-        chunk.values[ix as usize]
+        chunk.values[ix as usize].clone()
     }
 
     fn push(&mut self, val: LoxValue) {
@@ -141,8 +141,9 @@ impl VM {
     }
 
     fn pop(&mut self) -> LoxValue {
+        // TODO: make it Copy again?
         self.stack_top -= 1;
-        self.stack[self.stack_top]
+        self.stack[self.stack_top].clone()
     }
 
     fn reset_stack(&mut self) {

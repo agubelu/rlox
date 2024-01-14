@@ -3,7 +3,7 @@ mod debug;
 mod opcodes;
 mod parsing;
 mod scanning;
-mod value;
+mod values;
 mod vm;
 
 use std::env;
@@ -12,7 +12,7 @@ use std::process::exit;
 
 pub use chunk::Chunk;
 pub use opcodes::{OpCode, OpCodes};
-pub use value::LoxValue;
+pub use values::{LoxValue, Object};
 pub use vm::{InterpretResult, VM};
 
 fn main() {

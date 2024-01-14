@@ -1,6 +1,5 @@
-use std::fmt::{Debug, Display};
 use std::ops::{Add, Sub, Mul, Div, Neg, Not, BitAnd, BitOr};
-use crate::Object;
+use crate::values::LoxObject;
 use LoxValue::*;
 
 #[derive(Clone, PartialEq, Default)]
@@ -15,9 +14,8 @@ pub enum LoxValue {
     flip the operands to return the correct value. */
     Bool(bool),
     Number(f64),
-    Object(Object),
-    #[default]
-    Null,
+    Object(LoxObject),
+    #[default] Null,
 }
 
 impl LoxValue {
@@ -44,31 +42,14 @@ impl LoxValue {
 
 impl Eq for LoxValue {}
 
-impl Display for LoxValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Bool(b) => write!(f, "{b}"),
-            Number(n) => write!(f, "{n}"),
-            Object(o) => write!(f, "{o}"),
-            Null => write!(f, "null"),
-        }
-    }
-}
-
-impl Debug for LoxValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
 impl Add<Self> for LoxValue {
     type Output = Option<Self>;
 
     fn add(self, rhs: Self) -> Self::Output {
         match (rhs, self) {
             (Number(a), Number(b)) => Some(Number(a + b)),
-            (Object(Object::String(a)), Object(Object::String(b))) => {
-                Some(Object(Object::String(a + &b)))
+            (Object(LoxObject::String(a)), Object(LoxObject::String(b))) => {
+                Some(Object(LoxObject::String(a + &b)))
             },
             _ => None,
         }

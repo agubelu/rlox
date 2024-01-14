@@ -1,19 +1,14 @@
-mod chunk;
 mod debug;
-mod opcodes;
 mod parsing;
+mod runtime;
 mod scanning;
 mod values;
-mod vm;
 
 use std::env;
 use std::fs::read_to_string;
 use std::process::exit;
 
-pub use chunk::Chunk;
-pub use opcodes::{OpCode, OpCodes};
-pub use values::{LoxValue, Object};
-pub use vm::{InterpretResult, VM};
+use runtime::VM;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

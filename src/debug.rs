@@ -1,6 +1,10 @@
-use std::fmt::{Debug, Formatter, Result};
+// Implementations of Debug and Display that are useful to
+// know what's going on inside the VM as it runs.
+
+use std::fmt::{Debug, Formatter, Result, Display};
 use std::io::Write;
-use crate::{OpCodes, Chunk};
+use crate::runtime::{OpCodes, Chunk};
+use crate::values::{LoxValue, LoxObject};
 
 type Fmtr<'a, 'b> = &'a mut Formatter<'b>;
 
@@ -58,6 +62,39 @@ fn constant_op(f: &mut impl Write, name: &str, chunk: &Chunk, offset: usize) -> 
     let value = &chunk.values[value_ix as usize];
     writeln!(f, "{name:<16} {value_ix:4} '{value}'").unwrap();
     offset + 2
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+impl Display for LoxValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Bool(b) => write!(f, "{b}"),
+            Self::Number(n) => write!(f, "{n}"),
+            Self::Object(o) => write!(f, "{o}"),
+            Self::Null => write!(f, "null"),
+        }
+    }
+}
+
+impl Debug for LoxValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self}")
+    }
+}
+
+impl Display for LoxObject {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::String(s) => write!(f, "\"{s}\""),
+        }
+    }
+}
+
+impl Debug for LoxObject {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self}")
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////

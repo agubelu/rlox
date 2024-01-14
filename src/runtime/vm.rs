@@ -1,6 +1,7 @@
 use std::mem::take;
 use crate::parsing::Parser;
-use crate::{Chunk, OpCodes, LoxValue};
+use crate::runtime::{Chunk, OpCodes};
+use crate::values::LoxValue;
 
 const STACK_SIZE: usize = 256;
 

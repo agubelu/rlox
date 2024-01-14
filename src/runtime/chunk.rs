@@ -1,5 +1,5 @@
 use std::ops::Index;
-use crate::LoxValue;
+use crate::values::LoxValue;
 
 #[derive(Default)]
 pub struct Chunk {
